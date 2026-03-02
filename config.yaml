@@ -35,11 +35,11 @@ mqtt:
     # Existing default (HiveMQ Cloud-style).
     # Replace host with your cluster host, e.g. "xxxxxx.s1.eu.hivemq.cloud".
     hivemq_cloud:
-      host: "c451c402b7fb41b399936cd5727a1d3f.s1.eu.hivemq.cloud"
+      host: "f74f467cbe9941228cd1316b2098a904.s1.eu.hivemq.cloud"
       port: 8883
       tls: true
-      username_env: "HIVEMQ_USERNAME"
-      password_env: "HIVEMQ_PASSWORD"
+      username_env: "Battery"
+      password_env: "Ruc123456"
 
   # Optional alternative if you connect via WebSockets instead of raw MQTT.
   # websockets: false

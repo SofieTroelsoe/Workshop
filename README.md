@@ -1,21 +1,29 @@
-# simulated-city-template
+# Energy distribution through battery
 
-This is a template repository.
+### Definition
 
-Get started by reading [docs/setup.md](docs/setup.md).
-See [docs/overview.md](docs/overview.md) for an overview of the base module content.
+Our project will simulate how power is produced through a Windturbine, connected to one House and a battery. When the House is fully powered the extra energy left produced from the Windturbine, will be stored in an external Battery. 
+When there is no wind, no new energy will be produced from the Windturbine, and the House will receive the stored power from the external Battery.
 
-## Template for a project
+THIS COMPUTER and this file will focus on the distribution of the energy between the Windturbine, the House and the Battery.
+The following describes variables and constants that you can collect from the broker. it is ESSENTIAL that they are keeping their definitions as written bellow:
+Windturbine_Produced = amount of energy the Windturbine produces. This is a variable. House_Usage = amount of energy the House uses. This is a variable.
+Battery_Storage = how much energy is stored in the Battery. This is a variable. 
+v = df["Middelvind"].mean()
 
-### Step 1: Define Your Simulation (Before Any Code)
 
-Use this template to describe your project. Think about these four components and the messages they send between each other:
 
-### My Smart City Project: [Project Name]
+### My Smart City Project: Battery
 
 #### 1. The Trigger (Who/What is moving?)
-Describe the **Agents** (Humans, Animals, Vehicles) and the **Surroundings** (Weather, Time).
-*Example: A citizen drops a pizza box into the smart-bin.*
+The energy moves from the Windturbine to the Houses
+
+
+The battery will collect data from the broker. When the Windturbine creates more energy (Windturbine_Produced) than the Houses use (House_Usage), the excess energy fills the battery (Battery_Max). 
+When it is not Windy, the Windturbine doesn’t produce energy (Windturbine_Produced = 0). This means the House is in an energy deficit (Windturbine_Produced < House_Usage). Here the House uses the energy stored in the Battery (Battery_Storage), hence draining the battery. 
+
+All in all, the goal is to calculate the flow of the energy produced from variables. 
+
 
 #### 2. The Observer (What does the city see?)
 What **Sensor** picks up the information? 
