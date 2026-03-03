@@ -2,212 +2,119 @@
 
 ### Definition
 
-Our project will simulate how power is produced through a Windturbine, connected to one House and a battery. When the House is fully powered the extra energy left produced from the Windturbine, will be stored in an external Battery. 
-When there is no wind, no new energy will be produced from the Windturbine, and the House will receive the stored power from the external Battery.
+Our project will simulate how energy is produced through a Windturbine, connected to one Home and a battery. When the Home is fully powered the extra energy left produced from the Windturbine, will be stored in an external Battery. 
+When there is no wind, no new energy will be produced from the Windturbine, and the Home will receive the stored energy from the external Battery.
 
-THIS COMPUTER and this file will focus on the distribution of the energy between the Windturbine, the House and the Battery.
+## Part 1 - The Windturbine
+Part 1 focuses on gathering wind speed data from the website https://opendataapi.dmi.dk/v2/metObs. The data is the average wind speed every day for the interval 2025-01-01 to 2025-12-31 (so a full year). These wind_speed numbers are used as follows: 
+
+def wind_speed_for_day(day):
+    value = loop_df.loc[day, "Middelvind"]
+    if pd.isna(value):
+        return None
+    return float(value)
+
+def Wind_Power(v):
+    if v is None:
+        return None
+    return 19232.5 * (v ** 3)
+
+def Windturbine_Produced(v):
+    wind_power = Wind_Power(v)
+    if wind_power is None:
+        return None
+    return C * wind_power
+
+Where C = 0.4
+
+Windturbine_Produced is the amount of energy the Windturbine Produces. With the numbers from https://opendataapi.dmi.dk/v2/metObs, Windturbine_Produced would be 24054796.55888847 kWh in a year, meaning Windturbine_Produced_Yearly = 24054796.55888847 kWh
+
+
+## Part 2 - The Home
+The Home draw energy from the Windturbine. The average energy usage pr month is as follows:
+
+1 person in apartment = 121 kWh
+1 person in house = 183 kWh
+2 persons in apartment = 188 kWh
+2 persons in house = 258 kWh
+3 persons in apartment = 246 kWh
+3 persons in house = 325 kWh
+4 persons in apartment = 292 kWh
+4 persons in house = 383 kWh
+5 persons in apartment = 342 kWh
+5 persons in house = 442 kWh
+6 persons in apartment = 383 kWh
+6 persons in house = 500 kWh
+
+From my own calculations, the Windturbine produces 24054796.56 kWh in a year, defined as Windturbine_Produced_Yearly.
+
+The normal amount of persons in a Home is 4. Generate 10 Homes (both houses and apartments) with a normal distribution around that. 
+
+The homes monthly average energy usage is the average usage over a year. This means that every month can be +/- 7% of this. In the winter months, the homes mostly use up to + 7% more and in the summer they use up to 7% less. 
+
+This gives us 5900 randomly generated homes that can be powered by the Windturbine. 
+
+
+
+
+
+Part 3 will focus on the distribution of the energy between the Windturbine, the Homes and the Battery.
 The following describes variables and constants that you can collect from the broker. it is ESSENTIAL that they are keeping their definitions as written bellow:
-Windturbine_Produced = amount of energy the Windturbine produces. This is a variable. House_Usage = amount of energy the House uses. This is a variable.
-Battery_Storage = how much energy is stored in the Battery. This is a variable. 
-v = df["Middelvind"].mean()
+Windturbine_Produced = amount of energy the Windturbine produces. This is a variable collected from the broker.
+Home_Usage = amount of energy the Homes uses. This is a variable collected from the broker.
+Battery_Storage = how much energy is stored in the Battery. This is a variable dependant on Windturbine_Produced and Home_Usage. 
 
+Windturbine_Produced and Home_Usage are treated as already daily energy values (kWh/day).
+
+The simulation takes part over a year. Every day (The data is given in days for both the Windturbine_Produced and for the Home_Usage) is one second. The unit is in kW and kWh. The Battery capacity is 100.000 kW. the initial storage of the battery is 50%. When battery is 0%, the homes cant draw energy from them, but nothing visual happens. When the battery is 100%, the excess energy dissapears from the system.
+Replace the word "power" with "energy".
+The windmill blades must spin, the battery must be colored according to persentage and the indicators around the bar must update according to Home_Usage and Windturbine_Produced
+
+## Part 4 - The Visualization
+The total simulation will visualize the flow of energy from the Windturbine to the Home, with the battery as a storage for energy, that the Home can use when the Windturbine is not producing enough energy (when Home_Usage > Windturbine_Produced)
+The way that it will be visualized is a windturbine with an arrow pointing to a bar (Home_Energy_Usage). One indicator on the right side of the bar, shows how much energy the Home uses (Home_Usage) and an indicator on the left side showing how much energy is produced by the windturbine (Windturbine_Produced). Above them is a battery (Battery_Persentage). An arrow points from the Windturbine to the Battery and from the Battery to the Home. The persentage that the battery is full is indicated by how much of the battery (Battery_Percentage) is filled green (from left to right)
+
+![Home_Energy_Usage](image.png)
+![Battery_Percentage](image-2.png)
+![Windmill](image-3.png)
 
 
 ### My Smart City Project: Battery
 
 #### 1. The Trigger (Who/What is moving?)
-The energy moves from the Windturbine to the Houses
+The battery will collect data from the broker. When the Windturbine creates more energy (Windturbine_Produced) than the Homes use (Home_Usage), the excess energy fills the battery (Battery_Max). 
+When the Home is in an energy deficit (Windturbine_Produced < Home_Usage), the Home uses the energy stored in the Battery (Battery_Storage), hence draining the battery. 
 
-
-The battery will collect data from the broker. When the Windturbine creates more energy (Windturbine_Produced) than the Houses use (House_Usage), the excess energy fills the battery (Battery_Max). 
-When it is not Windy, the Windturbine doesn’t produce energy (Windturbine_Produced = 0). This means the House is in an energy deficit (Windturbine_Produced < House_Usage). Here the House uses the energy stored in the Battery (Battery_Storage), hence draining the battery. 
-
-All in all, the goal is to calculate the flow of the energy produced from variables. 
+If Windturbine_Produced = Home_Usage then no changes in Battery (Battery_Storage).
+If Windturbine_Produced > Home_Usage then excess energy fill Battery until Battery_Max
+If Windturbine_Produced < Home_Usage then Homes draw energy from Battery_Storage
 
 
 #### 2. The Observer (What does the city see?)
-What **Sensor** picks up the information? 
-*Example: An infrared sensor inside the bin detects the height of the trash.*
+The sensor notices when the home is in an energy surplus, and sends the excess energy to the battery. The sensor also notices when the home is in an energy deficit and sends energy from the battery to the home. 
 
 #### 3. The Control Center (The Logic)
-How does the city "think" about this information?
-*Example: If the trash height is more than 80%, send a signal to the garbage department.*
+When the Home is in an energy surplus, energy will go to the Battery from the Windturbine. When the Home is in an energy deficit, energy will be sent from the battery to the Home. 
 
 #### 4. The Response (What happens next?)
-What is the **Controller** that changes the city?
-*Example: A digital map in the garbage truck updates to show a "High Priority" pickup.*
+When the Home is in an energy surplus, energy will go to the Battery from the Windturbine. When the Home is in an energy deficit, energy will be sent from the battery to the Home.
+If the Battery is full, the excess energy will dissapear out of the system.
+
+
+#### 5. How to calculate Output of Windturbine
+
+Wind_Power is calculated from = 0.5 × ρ × v^3 × A, where ρ = 1.225 kg/(m^3), A = 31.400 m^2 and v is the variable defined as def wind_speed_for_day(day):
+    value = loop_df.loc[day, "Middelvind"]
+    if pd.isna(value):
+        return None
+    return float(value)
+
+This can also be written as Wind_Power ​= 19,232.5 kg/m ​⋅ v^3, seeing as v is the only variable
+Windturbine_Produced is calculated from = C × Wind_Power, where C = 40%.
+Example where v= 5m/s:
+Wind_Power = 0.5 * 1.225 kg/m³ * (5.5m/s)^3 * 31.400 m^2 =  19×10^6W
+Windturbine_Produced = 0,4 * 3.19×10^6W = 1,276,000W = 1,276 kW
+
+The output should ALWAYS be written in kW.
 
 ---
-
-## Workflow: Document-Driven Development with AI
-
-**This is how you work with any AI model (including GitHub Copilot, ChatGPT, Claude, etc.). The approach works regardless of which model your school uses.**
-
-### Phase 1: Clarify Your Idea with AI (No Code Yet)
-
-#### Copy this prompt into your AI chat:
-
-```
-I want to build a simulated city based on this outline. 
-Please help me clarify it before I code.
-
-[Paste your Project Template filled in above]
-
-Please:
-1. Rewrite the 4 components using clear, technical language
-2. Identify the MQTT topics each agent will publish/subscribe to
-3. List any configuration parameters (MQTT broker, locations, thresholds)
-4. Point out any ambiguities or missing details
-
-Do NOT write any code. Just clarify the design.
-```
-
-#### Review the AI's response
-- Does it capture your idea correctly?
-- Are the agents clearly separated?
-- Are the MQTT topics clear?
-- If not, refine and ask again
-
----
-
-### Phase 2: Get an Implementation Plan (Still No Code)
-
-#### Once you agree on the design, use this prompt:
-
-```
-Based on the design we just clarified:
-
-[Paste the clarified design from Phase 1]
-
-Please propose a phased implementation plan:
-- Phase 1: Single basic agent (smallest working notebook)
-- Phase 2: Add configuration file
-- Phase 3: Add MQTT publishing
-- Phase 4: Add second agent with MQTT subscription
-- Phase 5: Add dashboard visualization
-
-For each phase:
-1. List what new notebook files will be created
-2. List what tests/verifications I should run
-3. Say exactly what I should investigate/understand before moving to the next phase
-
-Do NOT write code yet. Just show the phases.
-```
-
-#### Review and approve the plan
-- Does each phase test one new thing?
-- Can you run and understand each phase?
-- Are there gaps?
-- Ask AI to adjust if needed
-
----
-
-### Phase 3: Implement ONE Phase at a Time
-
-#### For the FIRST phase only, use this prompt:
-
-```
-Implement ONLY Phase 1 from the plan above:
-[Paste Phase 1 description]
-
-Remember these rules (from .github/copilot-instructions.md):
-- Use anymap-ts for mapping (NOT folium)
-- Each notebook is ONE agent (NOT monolithic)
-- Load config via simulated_city.config.load_config()
-- Use mqtt.publish_json_checked() for publishing
-- Add all dependencies to pyproject.toml (NOT !pip install in notebooks)
-
-Only implement Phase 1. Do NOT jump ahead to Phase 2.
-Include comments explaining each section.
-```
-
-#### After you get the code:
-```bash
-python scripts/verify_setup.py      # Check dependencies
-python -m pytest                     # Run tests
-python -m jupyterlab                # Open the notebook and RUN IT
-```
-
-#### Investigate before moving forward
-- Does the notebook actually run without errors?
-- Can you explain what each cell does?
-- Does it match the design from Phase 1?
-- If something is wrong, ask AI to fix it before moving to Phase 2
-
----
-
-### Phase 4: Move to the Next Phase
-
-Once Phase 1 works, use this prompt:
-
-```
-Good! Phase 1 works. Now implement ONLY Phase 2:
-[Paste Phase 2 description]
-
-The Phase 1 notebooks/code are:
-[List what was created in Phase 1]
-
-Implement only Phase 2. Do NOT modify Phase 1 code unless necessary.
-```
-
-**Repeat this cycle for each phase.**
-
----
-
-## Key Rules to Remember
-
-✅ **DO** enforce these in every AI prompt:
-1. Two separate MQTT topics are better than one shared variable
-2. Each agent notebook is independent and can restart anytime
-3. Configuration comes from `config.yaml`, not hardcoded values
-4. All dependencies go in `pyproject.toml` first, then `pip install -e ".[notebooks]"`
-5. Dependencies must be approved: `anymap-ts` ✅, `folium` ❌
-
-❌ **DO NOT** let AI:
-- Skip the documentation/planning phases
-- Create one giant notebook with all logic
-- Jump to implementation without a clear, approved design
-- Install packages inside notebooks with `!pip install`
-- Use `folium`, `matplotlib`, or `plotly` for real-time maps
-
----
-
-## If the AI Skips Steps
-
-If you ask for implementation and the AI writes code without clarifying the design first, respond with:
-
-> "No code yet. I need to clarify the design first. Please rewrite my outline using the Phase 1 prompt above, then we'll get a plan before any implementation."
-
-If the AI proposes all 5 phases at once instead of letting you implement one at a time:
-
-> "I need only Phase 1 implementation. We'll do the other phases after I test Phase 1. Just give me Phase 1 code."
-
-If the AI installs `folium` or uses `!pip install`:
-
-> "No, use anymap-ts and add dependencies to pyproject.toml. Also, re-read .github/copilot-instructions.md for the full list of rules."
-
----
-
-## Testing Your Work
-
-After each phase, run:
-
-```bash
-# Check environment
-python scripts/verify_setup.py
-
-# Run existing tests
-python -m pytest
-
-# Try your new notebook
-python -m jupyterlab
-# Open the notebook and run all cells
-```
-
-Before submitting a pull request, include this in your description:
-
-```
-Docs updated: yes/no
-Phases completed: [e.g., "Phase 1 and Phase 2"]
-Tests passing: yes/no
-```
