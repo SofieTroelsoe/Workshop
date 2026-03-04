@@ -57,20 +57,67 @@ This gives us 5900 randomly generated homes that can be powered by the Windturbi
 
 
 
+## Part 3 - The Distributer and the Battery
+I want a simulation that shows the distribution of the energy in this system. 
+The distributor draws energy from the Windturbine to the Homes. If the windturbine on a given day creates more energy than the demand of the homes on that same day (Windturbine_Produced_Day > homes_shared_energy_usage_kwh_day), the excess energy is sent to storage in a Battery. The storage Battery can hold a maximum of 100.000 kWh and if there is still excess energy, it dissapears from the system (Energy_Lost_Day). If the windturbine on a given day creates less energy that the demand of the homes on that same day (homes_shared_energy_usage_kwh_day > Windturbine_Produced), the homes draw energy from the battery.
 
-Part 3 will focus on the distribution of the energy between the Windturbine, the Homes and the Battery.
-The following describes variables and constants that you can collect from the broker. it is ESSENTIAL that they are keeping their definitions as written bellow:
-Windturbine_Produced = amount of energy the Windturbine produces. This is a variable collected from the broker.
-Home_Usage = amount of energy the Homes uses. This is a variable collected from the broker.
-Battery_Storage = how much energy is stored in the Battery. This is a variable dependant on Windturbine_Produced and Home_Usage. 
+# Rules for the Battery itself
+The storage Battery can hold a maximum of 100.000 kWh and if there is still excess energy, it dissapears from the system (Energy_Lost_Day). this can also be written as: 
+surplus = Windturbine_Produced_day - homes_shared_energy_usage_kwh_day
+If surplus >= 0: battery charges by surplus (up to max capacity).
+Battery must always be clamped to valid range: 0 <= Battery_Storage <= 100000.
+Energy_Lost_Day = max(0, Battery_before + surplus - capacity)
 
-Windturbine_Produced and Home_Usage are treated as already daily energy values (kWh/day).
+The storage Battery starts with being 25.000 kWh = 25% of capacity (Battery_Percentage = 25%). 
+If the demand from the homes is bigger than the amount of energy produced by the windturbine (if homes_shared_energy_usage_kwh_day > Windturbine_Produced_day), the homes will draw energy from the battery, hence the percentage going down. this can also be written as: 
+If surplus < 0: battery discharges by abs(surplus) (down to 0).
 
-The simulation takes part over a year. Every day (The data is given in days for both the Windturbine_Produced and for the Home_Usage) is one second. The unit is in kW and kWh. The Battery capacity is 100.000 kW. the initial storage of the battery is 50%. When battery is 0%, the homes cant draw energy from them, but nothing visual happens. When the battery is 100%, the excess energy dissapears from the system.
-Replace the word "power" with "energy".
+
+
+
+# Where to get the information: 
+Windturbine_Produced_Day, can be found in notebooks\Wind_Speed.ipynb
+homes_shared_energy_usage_kwh_day, can be found in notebooks\Homes_Usage.ipynb cell 6
+
+
+
+# If it fails or missing data
+IF the shared energy amount in both the battery and the windturbine is not enough to cover the demand of the homes, end the simulation and print the message "Energy_Ran_Out". This happens ONLY if both the battery and the amount of energy produced by the windturbine is not enough for the homes. Then the simulation stops immediately. 
+IF Windturbine_Produced = 0 kWh, stop simulation and print "No_Energy_Produced"
+IF missing wind/home daily values, then skip day.
+
+# Output
+The simulation will show daily updates of how much energy is sent to the battery and to the homes. The simulation will also show the excess energy that dissapears from the system. 
+
+This means, it should show: 
+- Windturbine_Produced in kW
+- Battery_Percentage in %
+- homes_shared_energy_usage_kwh_day = float(row.usage_kWh) in kWh/day
+- Energy_Lost_Day in kWh/day
+for every day in the simulation. 
+Every day will pass in 1 real life second
+
+Exact field names: date, Windturbine_Produced_kwh_day, homes_shared_energy_usage_kwh_day, Battery_Percentage, Energy_Lost_Day_kwh
+Order of fields in each daily line/output should be: 
+- date
+- Windturbine_Produced_kwh_day
+- homes_shared_energy_usage_kwh_day
+- Battery_Percentage
+- Energy_Lost_Day_kwh
+Number formatting/rounding: 2 decimals for kWh, full numbers for %
+Date format should be YYYY-MM-DD
+Missing value behavior then skip line
+
+
+Windturbine_Produced is treated as a daily energy value (kWh/day) read from each day in the output of Cell 
+homes_shared_energy_usage_kwh_day is treated as a daily energy value (kWh/day), read from each day in the output of Cell 6 in notebooks\Homes_Usage.ipynb. 
+
+
+
+
+
+## Part 5 - The Visualization
 The windmill blades must spin, the battery must be colored according to persentage and the indicators around the bar must update according to Home_Usage and Windturbine_Produced
-
-## Part 4 - The Visualization
 The total simulation will visualize the flow of energy from the Windturbine to the Home, with the battery as a storage for energy, that the Home can use when the Windturbine is not producing enough energy (when Home_Usage > Windturbine_Produced)
 The way that it will be visualized is a windturbine with an arrow pointing to a bar (Home_Energy_Usage). One indicator on the right side of the bar, shows how much energy the Home uses (Home_Usage) and an indicator on the left side showing how much energy is produced by the windturbine (Windturbine_Produced). Above them is a battery (Battery_Persentage). An arrow points from the Windturbine to the Battery and from the Battery to the Home. The persentage that the battery is full is indicated by how much of the battery (Battery_Percentage) is filled green (from left to right)
 
