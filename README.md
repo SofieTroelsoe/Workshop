@@ -65,7 +65,7 @@ The distributor draws energy from the Windturbine to the Homes. If the windturbi
 The storage Battery can hold a maximum of 100.000 kWh and if there is still excess energy, it dissapears from the system (Energy_Lost_Day). this can also be written as: 
 surplus = Windturbine_Produced_day - homes_shared_energy_usage_kwh_day
 If surplus >= 0: battery charges by surplus (up to max capacity).
-Battery must always be clamped to valid range: 0 <= Battery_Storage <= 100000.
+Battery must always be clamped to valid range: 0 <= Battery_Storage <= 2500000.
 Energy_Lost_Day = max(0, Battery_before + surplus - capacity)
 
 The storage Battery starts with being 25.000 kWh = 25% of capacity (Battery_Percentage = 25%). 
@@ -76,8 +76,8 @@ If surplus < 0: battery discharges by abs(surplus) (down to 0).
 
 
 # Where to get the information: 
-Windturbine_Produced_Day, can be found in notebooks\Wind_Speed.ipynb
-homes_shared_energy_usage_kwh_day, can be found in notebooks\Homes_Usage.ipynb cell 6
+Windturbine_Produced_Day, can be found in notebooks\Windturbine_Daily_Produced.xlsx
+homes_shared_energy_usage_kwh_day, can be found in notebooks\Total_Usage_Houses.xlsx
 
 
 
@@ -89,7 +89,7 @@ IF missing wind/home daily values, then skip day.
 # Output
 The simulation will show daily updates of how much energy is sent to the battery and to the homes. The simulation will also show the excess energy that dissapears from the system. 
 
-This means, it should show: 
+This means, it should show ONLY the following in each row: 
 - Windturbine_Produced in kW
 - Battery_Percentage in %
 - homes_shared_energy_usage_kwh_day = float(row.usage_kWh) in kWh/day
@@ -108,9 +108,10 @@ Number formatting/rounding: 2 decimals for kWh, full numbers for %
 Date format should be YYYY-MM-DD
 Missing value behavior then skip line
 
+The simulation should have a pause button, so I can pause and restart the simulation.
 
-Windturbine_Produced is treated as a daily energy value (kWh/day) read from each day in the output of Cell 
-homes_shared_energy_usage_kwh_day is treated as a daily energy value (kWh/day), read from each day in the output of Cell 6 in notebooks\Homes_Usage.ipynb. 
+Windturbine_Produced is treated as a daily energy value (kWh/day) read from each day in the output of notebooks\Total_Usage_Houses.xlsx 
+homes_shared_energy_usage_kwh_day is treated as a daily energy value (kWh/day), read from each day in the output of notebooks\Windturbine_Daily_Produced.xlsx
 
 
 
@@ -124,7 +125,7 @@ The way that it will be visualized is a windturbine with an arrow pointing to a 
 ![Home_Energy_Usage](image.png)
 ![Battery_Percentage](image-2.png)
 ![Windmill](image-3.png)
-
+![Home](image-4.png)
 
 ### My Smart City Project: Battery
 
