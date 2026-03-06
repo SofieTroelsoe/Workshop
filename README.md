@@ -115,8 +115,6 @@ homes_shared_energy_usage_kwh_day is treated as a daily energy value (kWh/day), 
 
 
 
-
-
 ## Part 5 - The Visualization
 The windmill blades must spin, the battery must be colored according to persentage and the indicators around the bar must update according to Home_Usage and Windturbine_Produced
 The total simulation will visualize the flow of energy from the Windturbine to the Home, with the battery as a storage for energy, that the Home can use when the Windturbine is not producing enough energy (when Home_Usage > Windturbine_Produced)
@@ -127,42 +125,3 @@ The way that it will be visualized is a windturbine with an arrow pointing to a 
 ![Windmill](image-3.png)
 ![Home](image-4.png)
 
-### My Smart City Project: Battery
-
-#### 1. The Trigger (Who/What is moving?)
-The battery will collect data from the broker. When the Windturbine creates more energy (Windturbine_Produced) than the Homes use (Home_Usage), the excess energy fills the battery (Battery_Max). 
-When the Home is in an energy deficit (Windturbine_Produced < Home_Usage), the Home uses the energy stored in the Battery (Battery_Storage), hence draining the battery. 
-
-If Windturbine_Produced = Home_Usage then no changes in Battery (Battery_Storage).
-If Windturbine_Produced > Home_Usage then excess energy fill Battery until Battery_Max
-If Windturbine_Produced < Home_Usage then Homes draw energy from Battery_Storage
-
-
-#### 2. The Observer (What does the city see?)
-The sensor notices when the home is in an energy surplus, and sends the excess energy to the battery. The sensor also notices when the home is in an energy deficit and sends energy from the battery to the home. 
-
-#### 3. The Control Center (The Logic)
-When the Home is in an energy surplus, energy will go to the Battery from the Windturbine. When the Home is in an energy deficit, energy will be sent from the battery to the Home. 
-
-#### 4. The Response (What happens next?)
-When the Home is in an energy surplus, energy will go to the Battery from the Windturbine. When the Home is in an energy deficit, energy will be sent from the battery to the Home.
-If the Battery is full, the excess energy will dissapear out of the system.
-
-
-#### 5. How to calculate Output of Windturbine
-
-Wind_Power is calculated from = 0.5 × ρ × v^3 × A, where ρ = 1.225 kg/(m^3), A = 31.400 m^2 and v is the variable defined as def wind_speed_for_day(day):
-    value = loop_df.loc[day, "Middelvind"]
-    if pd.isna(value):
-        return None
-    return float(value)
-
-This can also be written as Wind_Power ​= 19,232.5 kg/m ​⋅ v^3, seeing as v is the only variable
-Windturbine_Produced is calculated from = C × Wind_Power, where C = 40%.
-Example where v= 5m/s:
-Wind_Power = 0.5 * 1.225 kg/m³ * (5.5m/s)^3 * 31.400 m^2 =  19×10^6W
-Windturbine_Produced = 0,4 * 3.19×10^6W = 1,276,000W = 1,276 kW
-
-The output should ALWAYS be written in kW.
-
----
